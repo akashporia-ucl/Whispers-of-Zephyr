@@ -1,0 +1,42 @@
+name: Blog service CI
+
+on:
+    push:
+        paths:
+            - "blog_service/**"
+        branches:
+            - "**"
+
+jobs:
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        env:
+            working-directory: ./blog_service
+        defaults:
+            run:
+                working-directory: ${{ env.working-directory }}
+
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Set up JDK 21
+              uses: actions/setup-java@v1
+              with:
+                  java-version: 21
+                  cache: "maven"
+
+            # Start Eureka Server
+            - name: Start Eureka Server
+              run: mvn -f discovery_server/pom.xml spring-boot:run &
+
+            # Wait for Eureka to start
+            - name: Wait for Eureka Server
+              run: |
+                  sleep 30  # Adjust time as needed to ensure Eureka is fully started
+
+            - name: Build with Maven
+              run: mvn -f blog_service/pom.xml clean package
+
+            - name: Run the blog service
+              run: mvn -f blog_service/pom.xml spring-boot:run
