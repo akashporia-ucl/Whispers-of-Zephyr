@@ -24,6 +24,7 @@ jobs:
               uses: actions/setup-java@v1
               with:
                   java-version: 21
+
                   cache: "maven"
 
             # Start Eureka Server
@@ -37,6 +38,8 @@ jobs:
 
             - name: Build with Maven
               run: mvn -f blog_service/pom.xml clean package
+              working-directory: ./blog_service
 
             - name: Run the blog service
               run: mvn -f blog_service/pom.xml spring-boot:run
+              working-directory: ./blog_service
