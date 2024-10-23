@@ -29,7 +29,8 @@ jobs:
 
             # Start Eureka Server
             - name: Start Eureka Server
-              run: mvn -f discovery_server/pom.xml spring-boot:run &
+              run: mvn spring-boot:run
+              working-directory: ./discovery_server
 
             # Wait for Eureka to start
             - name: Wait for Eureka Server
@@ -40,6 +41,10 @@ jobs:
               run: mvn clean package
               working-directory: ./blog_service
 
-            - name: Run the blog service
+            - name: Verify blog service
+              run: mvn verify
+              working-directory: ./blog_service
+
+            - name: Run blog service
               run: mvn spring-boot:run
               working-directory: ./blog_service
