@@ -27,9 +27,9 @@ jobs:
 
                   cache: "maven"
 
-            # Start Eureka Server
+            # Start Eureka Server in the background
             - name: Start Eureka Server
-              run: mvn spring-boot:run
+              run: nohup mvn spring-boot:run > eureka.log 2>&1 &
               working-directory: ./discovery_server
 
             # Wait for Eureka to start
@@ -45,6 +45,7 @@ jobs:
               run: mvn verify
               working-directory: ./blog_service
 
+            # Start Blog Service in the background
             - name: Run blog service
-              run: mvn spring-boot:run
+              run: nohup mvn spring-boot:run > blog_service.log 2>&1 &
               working-directory: ./blog_service
