@@ -8,7 +8,7 @@ public class BlogServiceController {
 
     @GetMapping("/")
     public String sayHello() {
-        return "Hello world!";
+        return "Hello from Blog Service!";
     }
 
 }
