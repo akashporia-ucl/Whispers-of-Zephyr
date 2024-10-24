@@ -23,3 +23,7 @@ spring:
             ddl-auto: create
         database: mysql
         database-platform: org.hibernate.dialect.MySQLDialect
+
+custom:
+    image:
+        path: ../../utils/default blog image.jpg
