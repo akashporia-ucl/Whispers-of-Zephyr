@@ -13,7 +13,10 @@ import com.whispers_of_zephyr.blog_service.component.MyAppConfigComponent;
 import com.whispers_of_zephyr.blog_service.model.Blog;
 import com.whispers_of_zephyr.blog_service.repository.BlogRepository;
 
+import lombok.extern.log4j.Log4j2;
+
 @Service
+@Log4j2
 public class BlogService {
 
     @Autowired
@@ -32,18 +35,29 @@ public class BlogService {
     // which is not recommended
 
     public List<Blog> getBlogs() {
+        log.info("Getting all blogs from the repository");
         return blogRepository.findAll();
     }
 
     public Blog postBlog(Blog blog, MultipartFile image) throws IOException {
-        byte[] imageBytes = null;
-        blog.setImage(image.getBytes());
+        byte[] imageBytes;
+
         if (!image.isEmpty()) {
-            blog.setImage(image.getBytes());
+            log.info("Image is not empty");
+            imageBytes = image.getBytes();
         } else {
+            log.info("Image is empty, using default image");
             imageBytes = Files.readAllBytes(Paths.get(appConfigComponent.getDefaultImagePath()));
         }
+
+        // Set the image bytes to the blog object
         blog.setImage(imageBytes);
+
+        // Log the blog details for debugging
+        log.info("Blog details: {}", blog);
+
+        // Save the blog to the repository
         return blogRepository.save(blog);
     }
+
 }

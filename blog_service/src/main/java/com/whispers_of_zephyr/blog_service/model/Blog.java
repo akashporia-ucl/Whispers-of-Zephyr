@@ -13,6 +13,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,6 +23,7 @@ import lombok.Setter;
 @Setter
 @Table(name = "blogs")
 @NoArgsConstructor
+@AllArgsConstructor
 public class Blog {
 
     @Id
@@ -32,11 +34,13 @@ public class Blog {
     @NotBlank(message = "Title is mandatory")
     private String title;
 
-    @Column(name = "content")
+    @Lob
+    @Column(name = "content", length = 10000)
     @NotBlank(message = "Content is mandatory")
     private String content;
 
     @Column(name = "author")
+    @NotBlank(message = "Author is mandatory")
     private String author;
 
     @Column(name = "created_at")
@@ -46,7 +50,7 @@ public class Blog {
     private LocalDateTime updatedAt;
 
     @Lob
-    @Column(name = "image")
+    @Column(name = "image", columnDefinition = "MEDIUMBLOB")
     private byte[] image;
 
     public Blog(String title, String content, String author, byte[] image) {
@@ -67,4 +71,12 @@ public class Blog {
         this.updatedAt = LocalDateTime.now();
     }
 
+    // Lombok's @Getter and @Setter annotations are not working for the image field
+    public void setImage(byte[] image) {
+        this.image = image;
+    }
+
+    public byte[] getImage() {
+        return image;
+    }
 }
