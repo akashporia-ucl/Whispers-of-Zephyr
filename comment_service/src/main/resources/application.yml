@@ -1,0 +1,25 @@
+eureka:
+    instance:
+        hostname: localhost
+    client:
+        serviceUrl:
+            defaultZone: http://localhost:8761/eureka/
+
+server:
+    port: 8081
+
+spring:
+    application:
+        name: comment-service
+    config:
+        import: optional:configserver:http://localhost:8888
+    datasource:
+        url: jdbc:mysql://localhost:3306/whispers_of_zephyr_comments
+        username: ${DB_USERNAME:root}
+        password: ${DB_PASSWORD:password}
+        driver-class-name: com.mysql.jdbc.Driver
+    jpa:
+        hibernate:
+            ddl-auto: create
+        database: mysql
+        database-platform: org.hibernate.dialect.MySQLDialect

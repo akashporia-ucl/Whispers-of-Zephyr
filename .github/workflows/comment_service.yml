@@ -1,0 +1,51 @@
+name: Comment service CI
+
+on:
+    push:
+        paths:
+            - "comment_service/**"
+        branches:
+            - "**"
+
+jobs:
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        env:
+            working-directory: ./comment_service
+        defaults:
+            run:
+                working-directory: ${{ env.working-directory }}
+
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Set up JDK 21
+              uses: actions/setup-java@v3
+              with:
+                  distribution: "temurin"
+                  java-version: 21
+                  cache: "maven"
+
+            # Start Eureka Server in the background
+            - name: Start Eureka Server
+              run: nohup mvn spring-boot:run > eureka.log 2>&1 &
+              working-directory: ./discovery_server
+
+            # Wait for Eureka to start
+            - name: Wait for Eureka Server
+              run: |
+                  sleep 30  # Adjust time as needed to ensure Eureka is fully started
+
+            - name: Build comment service with Maven
+              run: mvn clean package
+              working-directory: ./comment_service
+
+            - name: Verify comment service build
+              run: mvn verify
+              working-directory: ./comment_service
+
+            # Start Comment Service in the background
+            - name: Run comment service
+              run: nohup mvn spring-boot:run > comment_service.log 2>&1 &
+              working-directory: ./comment_service
