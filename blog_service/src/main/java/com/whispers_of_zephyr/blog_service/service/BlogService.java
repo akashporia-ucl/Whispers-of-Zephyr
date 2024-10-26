@@ -1,11 +1,11 @@
 package com.whispers_of_zephyr.blog_service.service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,13 +41,15 @@ public class BlogService {
 
     public Blog postBlog(Blog blog, MultipartFile image) throws IOException {
         byte[] imageBytes;
-
-        if (!image.isEmpty()) {
+        if (image != null && !image.isEmpty()) {
             log.info("Image is not empty");
             imageBytes = image.getBytes();
         } else {
             log.info("Image is empty, using default image");
-            imageBytes = Files.readAllBytes(Paths.get(appConfigComponent.getDefaultImagePath()));
+            // Get the default image from the resources folder
+            InputStream imageStream = new ClassPathResource(appConfigComponent.getDefaultImagePath()).getInputStream();
+            log.info("Default imaged fetched from the resources folder");
+            imageBytes = imageStream.readAllBytes();
         }
 
         // Set the image bytes to the blog object

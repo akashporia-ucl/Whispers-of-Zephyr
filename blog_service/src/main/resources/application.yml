@@ -20,7 +20,7 @@ spring:
         driver-class-name: com.mysql.jdbc.Driver
     jpa:
         hibernate:
-            ddl-auto: create
+            ddl-auto: update
         database: mysql
         database-platform: org.hibernate.dialect.MySQLDialect
 
@@ -32,4 +32,4 @@ spring:
 
 custom:
     image:
-        path: ../../utils/default blog image.jpg
+        path: "/utils/default blog image.jpeg"

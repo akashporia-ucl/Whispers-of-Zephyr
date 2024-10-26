@@ -38,7 +38,7 @@ public class BlogServiceController {
         log.info("Getting all blogs");
         List<Blog> blogs = blogService.getBlogs();
         log.info("Returning all blogs");
-        return ResponseEntity.ok(blogs);
+        return ResponseEntity.status(200).body(blogs); // OK
     }
 
     // Get method to get a blog by id along with the comments
@@ -50,9 +50,9 @@ public class BlogServiceController {
     // Post method to create a blog
     @PostMapping("/blogs")
     public ResponseEntity<Blog> postBlog(@RequestParam String title, @RequestParam String content,
-            @RequestParam String author, @RequestParam MultipartFile image) throws IOException {
+            @RequestParam String author, @RequestParam(required = false) MultipartFile image) throws IOException {
         log.info("Creating blog with title: " + title + ", author: " + author);
-        Blog blog = new Blog(title, content, author, image.getBytes());
+        Blog blog = new Blog(title, content, author, null);
         try {
             log.info("Calling service to create a blog");
             Blog createdBlog = blogService.postBlog(blog, image);
