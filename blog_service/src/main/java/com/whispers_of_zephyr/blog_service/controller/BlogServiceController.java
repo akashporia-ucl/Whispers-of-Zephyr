@@ -24,13 +24,19 @@ import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 @RestController
-@RequestMapping("/api/v1/")
+@RequestMapping("/api/v1")
 @NoArgsConstructor
 @Log4j2
 public class BlogServiceController {
 
     @Autowired
     private BlogService blogService;
+
+    @GetMapping("/")
+    public String helloFromService() {
+        String msg = blogService.helloMethod();
+        return "Hello from Blog Service and " + msg;
+    }
 
     // Get method to get all blogs
     @GetMapping("/blogs")
@@ -43,8 +49,8 @@ public class BlogServiceController {
 
     // Get method to get a blog by id along with the comments
     @GetMapping("/blogs/{id}")
-    public String getMethodName(@PathVariable String id) {
-        return "Hello, " + id;
+    public ResponseEntity<String> getMethodName(@PathVariable String id) {
+        return ResponseEntity.ok().body("Blog with id: " + id);
     }
 
     // Post method to create a blog

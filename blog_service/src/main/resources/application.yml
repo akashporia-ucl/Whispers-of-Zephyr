@@ -33,3 +33,8 @@ spring:
 custom:
     image:
         path: "/utils/default blog image.jpeg"
+
+application:
+    config:
+        comment-service:
+            url: http://localhost:8081/api/v1

@@ -37,8 +37,12 @@ jobs:
               run: |
                   sleep 30  # Adjust time as needed to ensure Eureka is fully started
 
-            - name: Build with Maven
+            - name: Clean with Maven
               run: mvn clean package
+              working-directory: ./blog_service
+
+            - name: Build with Maven
+              run: mvn install package
               working-directory: ./blog_service
 
             - name: Verify blog service

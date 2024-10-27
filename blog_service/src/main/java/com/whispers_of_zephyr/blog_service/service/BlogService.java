@@ -9,6 +9,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.whispers_of_zephyr.blog_service.client.CommentClient;
 import com.whispers_of_zephyr.blog_service.component.MyAppConfigComponent;
 import com.whispers_of_zephyr.blog_service.model.Blog;
 import com.whispers_of_zephyr.blog_service.repository.BlogRepository;
@@ -25,14 +26,24 @@ public class BlogService {
     @Autowired
     private final MyAppConfigComponent appConfigComponent;
 
-    public BlogService(BlogRepository blogRepository, MyAppConfigComponent appConfigComponent) {
+    @Autowired
+    private final CommentClient commentClient;
+
+    public BlogService(BlogRepository blogRepository, MyAppConfigComponent appConfigComponent,
+            CommentClient commentClient) {
         this.blogRepository = blogRepository;
         this.appConfigComponent = appConfigComponent;
+        this.commentClient = commentClient;
     }
 
     // @Autowired
     // private BlogRepository blogRepository; --> This is called field injection,
     // which is not recommended
+
+    public String helloMethod() {
+        log.info("Connecting to the comment service");
+        return commentClient.helloComments();
+    }
 
     public List<Blog> getBlogs() {
         log.info("Getting all blogs from the repository");

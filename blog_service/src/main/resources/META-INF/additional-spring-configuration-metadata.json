@@ -1,0 +1,14 @@
+{
+    "properties": [
+        {
+            "name": "application.config.comment-service.url",
+            "type": "java.lang.String",
+            "description": "A description for 'application.config.comment-service.url'"
+        },
+        {
+            "name": "custom.image.path",
+            "type": "java.lang.String",
+            "description": "A description for 'custom.image.path'"
+        }
+    ]
+}
