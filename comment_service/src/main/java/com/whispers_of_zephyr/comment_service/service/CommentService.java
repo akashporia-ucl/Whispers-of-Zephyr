@@ -30,9 +30,20 @@ public class CommentService {
         return commentRepository.findByBlogId(blogId);
     }
 
-    public Comment createCommentByBlogId(Comment comment) {
+    public Comment processCommentCreate(Comment comment) {
         log.info("Creating a new comment for blog with ID: {}", comment.getBlogId());
         return commentRepository.save(comment);
+    }
+
+    public Comment processCommentUpdate(UUID id, Comment comment) {
+        log.info("Processing comment update with ID: {}", id);
+        Comment commentToUpdate = commentRepository.findById(id).orElse(null);
+        if (commentToUpdate == null) {
+            log.error("Comment with ID: {} not found", id);
+            throw new RuntimeException("Comment not found");
+        }
+        commentToUpdate.setContent(comment.getContent());
+        return commentRepository.save(commentToUpdate);
     }
 
 }
