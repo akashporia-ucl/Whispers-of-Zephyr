@@ -39,3 +39,9 @@ spring:
                     auth: true
                     starttls:
                         enable: true
+
+    rabbitmq:
+        host: localhost
+        port: 5672
+        username: ${RABBITMQ_USERNAME:guest}
+        password: ${RABBITMQ_PASSWORD:guest}

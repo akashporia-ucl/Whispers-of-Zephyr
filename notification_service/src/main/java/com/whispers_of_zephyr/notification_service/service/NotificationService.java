@@ -1,11 +1,15 @@
 package com.whispers_of_zephyr.notification_service.service;
 
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import com.whispers_of_zephyr.notification_service.component.BlogEvent;
+
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.log4j.Log4j2;
 
 @Service
@@ -43,15 +47,27 @@ public class NotificationService {
         this.javaMailSender = javaMailSender;
     }
 
-    public void sendWelcomeEmail(String emailId) {
+    public void sendWelcomeEmail(String emailId) throws Exception {
         log.info("Seting up welcome email to " + emailId);
-        SimpleMailMessage messgae = new SimpleMailMessage();
-        messgae.setFrom(fromEmail);
-        messgae.setTo(emailId);
-        messgae.setSubject("Welcome to Whispers of Zephyr");
-        messgae.setText(textMessage);
+        MimeMessage messgae = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(messgae);
+        helper.setFrom(fromEmail);
+        helper.setTo(emailId);
+        helper.setSubject("Welcome to Whispers of Zephyr");
+        helper.setText(textMessage);
         javaMailSender.send(messgae);
         log.info(emailId + " received welcome email successfully");
+    }
+
+    public void sendOTP(String emailId) {
+        log.info("Sending OTP to " + emailId);
+    }
+
+    @RabbitListener(queues = "blog.created.queue")
+    public void handleNewBlogCreatedEvent(BlogEvent blogEvent) {
+        log.info("Received NewBlogCreatedEvent: Blog ID = {}, Title = {}, Author ID = {}, Created At = {}",
+                blogEvent.getBlogId(), blogEvent.getBlogTitle(), blogEvent.getBlogAuthor(),
+                blogEvent.getBlogCreatedTime());
     }
 
 }

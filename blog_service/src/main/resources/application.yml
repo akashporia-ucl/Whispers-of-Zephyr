@@ -30,6 +30,12 @@ spring:
             max-request-size: 10MB
             enabled: true
 
+    rabbitmq:
+        host: localhost
+        port: 5672
+        username: ${RABBITMQ_USERNAME:guest}
+        password: ${RABBITMQ_PASSWORD:guest}
+
 custom:
     image:
         path: "/utils/default blog image.jpeg"
