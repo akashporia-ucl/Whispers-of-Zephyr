@@ -1,0 +1,31 @@
+eureka:
+    instance:
+        hostname: localhost
+    client:
+        serviceUrl:
+            defaultZone: http://localhost:8761/eureka/
+
+server:
+    port: 8083
+
+spring:
+    application:
+        name: user-service
+    config:
+        import: optional:configserver:http://localhost:8888
+    datasource:
+        url: jdbc:mysql://localhost:3306/whispers_of_zephyr_users
+        username: ${DB_USERNAME:root}
+        password: ${DB_PASSWORD:password}
+        driver-class-name: com.mysql.jdbc.Driver
+    jpa:
+        hibernate:
+            ddl-auto: update
+        database: mysql
+        database-platform: org.hibernate.dialect.MySQLDialect
+
+    rabbitmq:
+        host: localhost
+        port: 5672
+        username: ${RABBITMQ_USERNAME:guest}
+        password: ${RABBITMQ_PASSWORD:guest}
