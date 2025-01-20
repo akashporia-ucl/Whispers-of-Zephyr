@@ -1,0 +1,77 @@
+version: "3.8"
+
+services:
+    config_server:
+        build:
+            context: ./config_server
+            dockerfile: Dockerfile
+        ports:
+            - "8888:8888"
+
+    discovery_server:
+        build:
+            context: ./discovery_server
+            dockerfile: Dockerfile
+        ports:
+            - "8761:8761"
+        depends_on:
+            - config_server
+
+    service1:
+        build:
+            context: ./Backend/service1
+            dockerfile: Dockerfile
+        ports:
+            - "8081:8081"
+        depends_on:
+            - mysql
+            - rabbitmq
+            - config_server
+            - discovery_server
+        env_file:
+            - .env
+
+    service2:
+        build:
+            context: ./Backend/service2
+            dockerfile: Dockerfile
+        ports:
+            - "8082:8082"
+        depends_on:
+            - mysql
+            - rabbitmq
+            - config_server
+            - discovery_server
+        env_file:
+            - .env
+
+    service3:
+        build:
+            context: ./Backend/service3
+            dockerfile: Dockerfile
+        ports:
+            - "8083:8083"
+        depends_on:
+            - mysql
+        env_file:
+            - .env
+
+    mysql:
+        image: mysql:8.0
+        container_name: mysql
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: your_database
+        volumes:
+            - mysql_data:/var/lib/mysql
+
+    rabbitmq:
+        image: rabbitmq:3-management
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+
+volumes:
+    mysql_data:

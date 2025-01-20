@@ -1,0 +1,14 @@
+# Use the appropriate JDK version
+FROM eclipse-temurin:21-jdk-alpine
+
+# Set the working directory inside the container
+WORKDIR /backend/discovery_server
+
+# Copy the JAR file to the working directory
+COPY target/discovery_server.jar .
+
+# Expose the port the service listens on
+EXPOSE 8761
+
+# Set the entry point to run the service
+ENTRYPOINT ["java", "-jar", "service1.jar"]
