@@ -1,9 +1,9 @@
 eureka:
     instance:
-        hostname: localhost
+        hostname: comment-service
     client:
         serviceUrl:
-            defaultZone: http://localhost:8761/eureka/
+            defaultZone: http://discovery_server:8761/eureka/
 
 server:
     port: 8081
@@ -12,14 +12,20 @@ spring:
     application:
         name: comment-service
     config:
-        import: optional:configserver:http://localhost:8888
+        import: optional:configserver:http://config_server:8888
     datasource:
-        url: jdbc:mysql://localhost:3306/whispers_of_zephyr_comments
-        username: ${DB_USERNAME:root}
-        password: ${DB_PASSWORD:password}
-        driver-class-name: com.mysql.jdbc.Driver
+        url: jdbc:mysql://mysql:3306/whispers_of_zephyr_comments
+        username: ${DB_USERNAME}
+        password: ${DB_PASSWORD}
+        driver-class-name: com.mysql.cj.jdbc.Driver
     jpa:
         hibernate:
             ddl-auto: update
         database: mysql
         database-platform: org.hibernate.dialect.MySQLDialect
+
+    rabbitmq:
+        host: rabbitmq
+        port: 5672
+        username: ${RABBITMQ_USERNAME}
+        password: ${RABBITMQ_PASSWORD}
