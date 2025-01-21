@@ -121,6 +121,15 @@ services:
         networks:
             - app_network
 
+    frontend_service:
+        build:
+            context: ./frontend_service
+            dockerfile: DockerFile
+        ports:
+            - "5173:5173"
+        networks:
+            - app_network
+
 volumes:
     mysql_data:
     rabbitmq_data:
