@@ -3,7 +3,7 @@ eureka:
         hostname: notification-service
     client:
         serviceUrl:
-            defaultZone: http://discovery_server:8761/eureka/
+            defaultZone: http://discovery-server:8761/eureka/
 
 server:
     port: 8082
@@ -12,7 +12,7 @@ spring:
     application:
         name: notification-service
     config:
-        import: optional:configserver:http://config_server:8888
+        import: optional:configserver:http://config-server:8888
     datasource:
         url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
         driver-class-name: org.h2.Driver

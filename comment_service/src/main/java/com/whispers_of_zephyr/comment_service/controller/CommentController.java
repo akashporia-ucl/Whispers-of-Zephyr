@@ -30,6 +30,7 @@ public class CommentController {
 
     @GetMapping("/")
     public String helloComments() {
+        log.info("Logging from Comment Service");
         return "Hello from Comment Service";
     }
 

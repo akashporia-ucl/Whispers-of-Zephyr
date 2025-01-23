@@ -8,10 +8,10 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>discovery_server</module>
         <module>blog_service</module>
         <module>comment_service</module>
         <module>notification_service</module>
         <module>user_service</module>
     </modules>
 </project>
-

@@ -58,7 +58,7 @@ public class BlogServiceController {
     public ResponseEntity<Blog> postBlog(@RequestParam String title, @RequestParam String content,
             @RequestParam String author, @RequestParam(required = false) MultipartFile image) throws IOException {
         log.info("Creating blog with title: " + title + ", author: " + author);
-        Blog blog = new Blog(title, content, author, null);
+        Blog blog = new Blog(title, content, author, UUID.randomUUID(), null);
         try {
             log.info("Calling service to create a blog");
             Blog createdBlog = blogService.postBlog(blog, image);

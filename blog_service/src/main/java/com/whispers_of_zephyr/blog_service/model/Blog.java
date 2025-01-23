@@ -13,6 +13,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,10 +54,15 @@ public class Blog {
     @Column(name = "image", columnDefinition = "MEDIUMBLOB")
     private byte[] image;
 
-    public Blog(String title, String content, String author, byte[] image) {
+    @Column(name = "user_id")
+    @NotNull(message = "User ID is mandatory")
+    private UUID userId;
+
+    public Blog(String title, String content, String author, UUID user_id, byte[] image) {
         this.title = title;
         this.content = content;
         this.author = author;
+        this.userId = user_id;
         this.image = image;
     }
 

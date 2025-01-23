@@ -3,7 +3,7 @@ eureka:
         hostname: user-service
     client:
         serviceUrl:
-            defaultZone: http://discovery_server:8761/eureka/
+            defaultZone: http://discovery-server:8761/eureka/
 
 server:
     port: 8083
@@ -12,12 +12,19 @@ spring:
     application:
         name: user-service
     config:
-        import: optional:configserver:http://config_server:8888
+        import: optional:configserver:http://config-server:8888
     datasource:
         url: jdbc:mysql://mysql:3306/whispers_of_zephyr_users
         username: ${DB_USERNAME}
         password: ${DB_PASSWORD}
         driver-class-name: com.mysql.cj.jdbc.Driver
+        hikari:
+            connection-timeout: 30000
+            maximum-pool-size: 5
+            minimum-idle: 2
+            idle-timeout: 10000
+            max-lifetime: 30000
+            initialization-fail-timeout: -1
     jpa:
         hibernate:
             ddl-auto: update
@@ -29,3 +36,7 @@ spring:
         port: 5672
         username: ${RABBITMQ_USERNAME}
         password: ${RABBITMQ_PASSWORD}
+    security:
+        user:
+            name: admin
+            password: admin

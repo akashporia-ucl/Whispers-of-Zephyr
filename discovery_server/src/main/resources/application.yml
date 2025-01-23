@@ -1,6 +1,6 @@
 eureka:
     instance:
-        hostname: localhost
+        hostname: discovery-server
     client:
         registerWithEureka: false
         fetchRegistry: false
@@ -14,4 +14,4 @@ spring:
     application:
         name: discovery-server
     config:
-        import: optional:configserver:http://localhost:8888
+        import: optional:configserver:http://config_server:8888

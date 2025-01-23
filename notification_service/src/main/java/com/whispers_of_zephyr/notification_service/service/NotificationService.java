@@ -63,6 +63,11 @@ public class NotificationService {
         log.info("Sending OTP to " + emailId);
     }
 
+    public String printFromEmail() {
+        log.info("From Email: " + fromEmail);
+        return fromEmail;
+    }
+
     @RabbitListener(queues = "blog.created.queue")
     public void handleNewBlogCreatedEvent(BlogEvent blogEvent) {
         log.info("Received NewBlogCreatedEvent: Blog ID = {}, Title = {}, Author ID = {}, Created At = {}",

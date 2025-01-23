@@ -35,6 +35,9 @@ public class Comment {
     @NotNull(message = "Blog ID is mandatory")
     private UUID blogId;
 
+    @NotNull(message = "User id is mandatory")
+    private UUID userId;
+
     @Column(name = "content")
     @NotBlank(message = "Content is mandatory")
     private String content;
@@ -49,8 +52,9 @@ public class Comment {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public Comment(UUID blogId, String content, String author) {
+    public Comment(UUID blogId, UUID user_id, String content, String author) {
         this.blogId = blogId;
+        this.userId = user_id;
         this.content = content;
         this.author = author;
     }
