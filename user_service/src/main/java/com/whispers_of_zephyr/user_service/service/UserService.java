@@ -1,6 +1,7 @@
 package com.whispers_of_zephyr.user_service.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,9 +22,13 @@ public class UserService {
     @Autowired
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    @Autowired
+    private final JWTService jwtService;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JWTService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public List<User> getAllUsers() {
@@ -39,12 +44,23 @@ public class UserService {
 
     public boolean validatePassword(String password, String encodedPassword) {
         log.info("Validating password");
-        return passwordEncoder.matches(password, encodedPassword);
+        boolean validatePassword = passwordEncoder.matches(password, encodedPassword);
+        log.info("Password validation result: " + validatePassword);
+        return validatePassword;
     }
 
-    public String generateToken(User user) {
-        log.info("Generating token for user: " + user.getUsername());
-        return "";
+    public String generateToken(String username, String password) throws Exception {
+        log.info("Generating token for user: " + username);
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent()) {
+            if (validatePassword(password, user.get().getPassword())) {
+                return jwtService.generateToken(user.get());
+            } else {
+                throw new Exception("Invalid password");
+            }
+        } else {
+            throw new Exception("User not found");
+        }
     }
 
 }

@@ -43,6 +43,22 @@ services:
         networks:
             - app_network
 
+    api_gateway:
+        build:
+            context: ./api_gateway
+            dockerfile: DockerFile
+        container_name: api-gateway
+        ports:
+            - "8000:8000"
+        networks:
+            - app_network
+        depends_on:
+            - discovery_server
+            - user_service
+            - blog_service
+            - comment_service
+            - notification_service
+
     discovery_server:
         build:
             context: ./discovery_server
@@ -58,8 +74,8 @@ services:
             context: ./blog_service
             dockerfile: DockerFile
         container_name: blog-service
-        ports:
-            - "8080:8080"
+        # ports:
+        #     - "8080:8080"
         depends_on:
             mysql:
                 condition: service_healthy
@@ -78,8 +94,8 @@ services:
             context: ./comment_service
             dockerfile: DockerFile
         container_name: comment-service
-        ports:
-            - "8081:8081"
+        # ports:
+        #     - "8081:8081"
         depends_on:
             mysql:
                 condition: service_healthy
@@ -98,8 +114,8 @@ services:
             context: ./notification_service
             dockerfile: DockerFile
         container_name: notification-service
-        ports:
-            - "8082:8082"
+        # ports:
+        #     - "8082:8082"
         depends_on:
             mysql:
                 condition: service_healthy
@@ -120,8 +136,8 @@ services:
             context: ./user_service
             dockerfile: DockerFile
         container_name: user-service
-        ports:
-            - "8083:8083"
+        # ports:
+        #     - "8083:8083"
         depends_on:
             mysql:
                 condition: service_healthy

@@ -32,7 +32,7 @@ public class User {
     @NotBlank(message = "Full Name is mandatory")
     private String fullName;
 
-    @Column(name = "Username")
+    @Column(name = "Username", unique = true)
     @NotBlank(message = "Username is mandatory")
     private String username;
 

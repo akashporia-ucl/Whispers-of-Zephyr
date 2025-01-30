@@ -43,4 +43,4 @@ custom:
 application:
     config:
         comment-service:
-            url: http://comment-service:8081/api/v1
+            url: http://comment-service:8081/comment-service/api/v1

@@ -14,7 +14,7 @@ import com.whispers_of_zephyr.notification_service.service.NotificationService;
 import lombok.extern.log4j.Log4j2;
 
 @RestController
-@RequestMapping("/api/v1/")
+@RequestMapping("/notification-service/api/v1/")
 @Log4j2
 public class NotificationController {
 
