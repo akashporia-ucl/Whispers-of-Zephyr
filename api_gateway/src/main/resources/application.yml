@@ -14,28 +14,35 @@ spring:
             discovery:
                 locator:
                     enabled: true
-            mvc:
-                routes:
-                    - id: blog-service
-                      uri: http://blog-service:8080
-                      predicates:
-                          - Path=/blog-service/api/v1/**
-                    - id: comment-service
-                      uri: http://comment-service:8081
-                      predicates:
-                          - Path=/comment-service/api/v1/**
-                    - id: notification-service
-                      uri: http://notification-service:8082
-                      predicates:
-                          - Path=/notification-service/api/v1/**
-                    - id: user-service
-                      uri: http://user-service:8083
-                      predicates:
-                          - Path=/user-service/api/v1/**
+            routes:
+                - id: blog-service
+                  uri: http://blog-service:8080
+                  predicates:
+                      - Path=/blog-service/api/v1/**
+                - id: comment-service
+                  uri: http://comment-service:8081
+                  predicates:
+                      - Path=/comment-service/api/v1/**
+                - id: notification-service
+                  uri: http://notification-service:8082
+                  predicates:
+                      - Path=/notification-service/api/v1/**
+                - id: user-service
+                  uri: http://user-service:8083
+                  predicates:
+                      - Path=/user-service/api/v1/**
 
     config:
         import: optional:configserver:http://config-server:8888
 
+    codec:
+        max-in-memory-size: 10MB
+
 logging:
     level:
         org.springframework.cloud.gateway: DEBUG
+
+application:
+    config:
+        user-service:
+            url: http://user-service:8083/user-service/api/v1

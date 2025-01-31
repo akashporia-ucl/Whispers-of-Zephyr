@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -44,38 +45,18 @@ public class SecurityConfig {
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 http
                                 .csrf(csrf -> csrf
-                                                .ignoringRequestMatchers(request -> (request.getMethod().equals("POST")
-                                                                && request.getRequestURI()
-                                                                                .equals("/user-service/api/v1/user"))
-                                                                ||
-                                                                (request.getMethod().equals("GET")
-                                                                                && request.getRequestURI().equals(
-                                                                                                "/user-service/api/v1/public-key"))
-                                                                ||
-                                                                (request.getMethod().equals("GET")
-                                                                                && request.getRequestURI().equals(
-                                                                                                "/user-service/api/v1/user/login"))))
-                                .authorizeHttpRequests((authz) -> authz
+                                                .disable()) // Disable CSRF
+                                .authorizeHttpRequests(authz -> authz
                                                 .requestMatchers(HttpMethod.POST, "/user-service/api/v1/user")
-                                                .permitAll() // Allow
-                                                // POST
-                                                // for
-                                                // login
+                                                .permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/user-service/api/v1/public-key",
                                                                 "/user-service/api/v1/user/login")
-                                                .permitAll() // Allow
-                                                             // GET
-                                                // for
-                                                // public-key
-                                                // and user
-                                                .requestMatchers("/user-service/api/v1/users/**").hasRole("USER") // Protect
-                                                                                                                  // users/**
-                                                // with ROLE_USER
-                                                .requestMatchers("/user-service/api/v1/admin/**").hasRole("ADMIN") // Protect
-                                                // admin/** with
-                                                // ROLE_ADMIN
-                                                .anyRequest().authenticated()) // All other requests require
+                                                .permitAll()
+                                                .anyRequest().authenticated()) // All other endpoints require
                                                                                // authentication
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // No sessions,
+                                                                                                         // only JWT
                                 .formLogin(withDefaults())
                                 .httpBasic(withDefaults());
                 return http.build();

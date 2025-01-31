@@ -8,8 +8,8 @@ WORKDIR /api_gateway
 COPY pom.xml ./
 COPY src ./src
 
-# Run Maven to build the application and skip tests
-RUN mvn clean package -DskipTests
+# Run Maven to clean, install dependencies, and build the application while skipping tests
+RUN mvn clean install -DskipTests && mvn package -DskipTests
 
 # Use a smaller JDK image to run the application
 FROM eclipse-temurin:21-jdk-alpine

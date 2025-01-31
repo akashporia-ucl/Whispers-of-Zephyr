@@ -8,8 +8,8 @@ WORKDIR /user_service
 COPY pom.xml ./
 COPY src ./src
 
-# Run Maven to build the application and skip tests
-RUN mvn clean package -DskipTests
+# Run Maven to clean, install dependencies, and build the application while skipping tests
+RUN mvn clean install -DskipTests && mvn package -DskipTests
 
 # Use the appropriate JDK version
 FROM eclipse-temurin:21-jdk-alpine
