@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.whispers_of_zephyr.notification_service.model.OTPRequest;
 import com.whispers_of_zephyr.notification_service.service.NotificationService;
 
 import lombok.extern.log4j.Log4j2;
@@ -34,16 +35,17 @@ public class NotificationController {
     public ResponseEntity<String> welcomeEmail(@RequestParam String emailId) throws Exception {
         log.info("Sending welcome email to " + emailId);
         log.info("Calling notification service to send welcome email");
-        notificationService.sendWelcomeEmail(emailId);
+        // notificationService.sendWelcomeEmail(emailId);
         log.info("Notification service called successfully");
         return ResponseEntity.status(200).body("Welcome email sent to " + emailId);
     }
 
     @PostMapping("/sendOtp")
-    public String sendOTP(@RequestBody String entity) {
-        log.info("Sending OTP to " + entity);
-
-        return entity;
+    public String sendOTP(@RequestBody OTPRequest request) {
+        log.info("Sending OTP to " + request.getEmail());
+        log.info("Calling notification service to send OTP");
+        notificationService.sendOTP(request.getEmail(), request.getOtp());
+        return "OTP sent to " + request.getEmail();
     }
 
 }

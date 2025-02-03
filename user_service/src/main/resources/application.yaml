@@ -40,3 +40,8 @@ spring:
         user:
             name: admin
             password: admin
+
+application:
+    config:
+        notification-service:
+            url: http://notification-service:8082/notification-service/api/v1

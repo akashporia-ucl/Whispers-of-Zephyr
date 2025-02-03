@@ -47,7 +47,10 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf
                                                 .disable()) // Disable CSRF
                                 .authorizeHttpRequests(authz -> authz
-                                                .requestMatchers(HttpMethod.POST, "/user-service/api/v1/user")
+                                                .requestMatchers(HttpMethod.POST, "/user-service/api/v1/user",
+                                                                "/user-service/api/v1/user/auth/reset-password/request",
+                                                                "/user-service/api/v1/user/auth/reset-password/validate-otp",
+                                                                "/user-service/api/v1/user/auth/reset-password/confirm-password")
                                                 .permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/user-service/api/v1/public-key",
                                                                 "/user-service/api/v1/user/login")

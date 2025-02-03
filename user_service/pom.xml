@@ -52,6 +52,10 @@
 			<artifactId>spring-rabbit-stream</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.amqp</groupId>
+			<artifactId>spring-rabbit</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-config</artifactId>
 		</dependency>
@@ -105,6 +109,10 @@
 			<version>3.18.2</version>
 		</dependency>
 
+		<dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
 
 	</dependencies>
 	<dependencyManagement>

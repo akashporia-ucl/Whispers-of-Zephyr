@@ -30,7 +30,10 @@ public class JwtAuthFilter implements GlobalFilter {
     private static final Set<String> PUBLIC_PATHS = Stream.of(
             "/user-service/api/v1/user/login",
             "/user-service/api/v1/user",
-            "/user-service/api/v1/public-key").collect(Collectors.toSet());
+            "/user-service/api/v1/public-key",
+            "/user-service/api/v1/user/auth/reset-password/request",
+            "/user-service/api/v1/user/auth/reset-password/validate-otp",
+            "/user-service/api/v1/user/auth/reset-password/confirm-password").collect(Collectors.toSet());
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -40,9 +43,10 @@ public class JwtAuthFilter implements GlobalFilter {
 
         // If the path is public, allow request without checking JWT
         if (isPublicPath(requestPath)) {
+            log.info("Path is public, proceeding without JWT check: {}", requestPath);
             return chain.filter(exchange);
         }
-
+        log.info("Path is protected, JWT validation required: {}", requestPath);
         // Check if the request has an Authorization header
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         log.info("Authorization header: {}", authHeader);
