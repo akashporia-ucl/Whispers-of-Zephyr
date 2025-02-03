@@ -50,7 +50,7 @@ jobs:
               uses: docker/setup-buildx-action@v2
 
             - name: Build Discovery Server Image
-              run: docker build -t discovery_server:latest -f discovery_server/Dockerfile ./discovery_server
+              run: docker build -t discovery_server:latest -f discovery_server/DockerFile ./discovery_server
 
             - name: Run Discovery Server
               run: |
@@ -58,7 +58,7 @@ jobs:
                   sleep 30  # Ensure Eureka Server is ready
 
             - name: Build Blog Service Image
-              run: docker build -t blog_service:latest -f blog_service/Dockerfile ./blog_service
+              run: docker build -t blog_service:latest -f blog_service/DockerFile ./blog_service
 
             - name: Run Blog Service
               run: |
