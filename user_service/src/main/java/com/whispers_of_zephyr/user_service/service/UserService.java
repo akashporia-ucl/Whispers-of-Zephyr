@@ -103,7 +103,7 @@ public class UserService {
 
     private void publishNewUserEvent(User user) {
         log.info("Publishing new user event to the RabbitMQ");
-        NewUserEvent newUserEvent = userToUserEvent.toNewUserEvent(user);
-        rabbitTemplate.convertAndSend("userExchange", "user.created", newUserEvent);
+        // NewUserEvent newUserEvent = userToUserEvent.toNewUserEvent(user);
+        // rabbitTemplate.convertAndSend("userExchange", "user.created", newUserEvent);
     }
 }

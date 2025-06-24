@@ -13,5 +13,6 @@
         <module>comment_service</module>
         <module>notification_service</module>
         <module>user_service</module>
+		<module>common</module>
     </modules>
 </project>

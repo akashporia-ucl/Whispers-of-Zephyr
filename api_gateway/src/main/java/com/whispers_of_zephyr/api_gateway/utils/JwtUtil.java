@@ -77,4 +77,24 @@ public class JwtUtil {
                     }
                 });
     }
+
+    public Mono<String> extractUserId(String token) {
+        return fetchPublicKey()
+                .flatMap(publicKey -> {
+                    try {
+                        log.info("Extracting userId from JWT");
+
+                        Jws<Claims> claims = Jwts.parserBuilder()
+                                .setSigningKey(publicKey)
+                                .build()
+                                .parseClaimsJws(token);
+
+                        String userId = claims.getBody().get("userId", String.class);
+                        return Mono.justOrEmpty(userId);
+                    } catch (RuntimeException e) {
+                        log.error("Failed to extract userId from JWT", e);
+                        return Mono.empty();
+                    }
+                });
+    }
 }

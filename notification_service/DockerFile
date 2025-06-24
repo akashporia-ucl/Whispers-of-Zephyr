@@ -1,24 +1,31 @@
-# Use Maven image to build the application
+# Multi-stage build: First stage to build common and notification service
 FROM maven:3.9.5-eclipse-temurin-21-alpine AS build
 
-# Set the working directory inside the container
-WORKDIR /notification_service
+# Set the working directory
+WORKDIR /app
 
-# Copy only the necessary files for dependency resolution
-COPY pom.xml ./
-COPY src ./src
+# First build the common module
+# Copy common module files
+COPY common/pom.xml ./common/
+COPY common/src ./common/src/
+# Install common module to local Maven repository
+RUN cd ./common && mvn clean install -DskipTests
 
-# Run Maven to clean, install dependencies, and build the application while skipping tests
-RUN mvn clean install -DskipTests && mvn package -DskipTests
+# Then build the notification service
+# Copy notification service files
+COPY notification_service/pom.xml ./notification_service/
+COPY notification_service/src ./notification_service/src/
+# Build the notification service with the common dependency
+RUN cd ./notification_service && mvn clean package -DskipTests
 
-# Use the appropriate JDK version
+# Second stage: Runtime image
 FROM eclipse-temurin:21-jdk-alpine
 
-# Set the working directory inside the container
-WORKDIR /notification_service
+# Set the working directory
+WORKDIR /app
 
-# Copy the JAR file to the working directory
-COPY  --from=build /notification_service/target/notification_service-0.0.1-SNAPSHOT.jar notification_service.jar
+# Copy only the built JAR from the build stage
+COPY --from=build /app/notification_service/target/notification_service-0.0.1-SNAPSHOT.jar notification_service.jar
 
 # Expose the port the service listens on
 EXPOSE 8082

@@ -43,10 +43,31 @@ services:
         networks:
             - app_network
 
+    minio:
+        image: quay.io/minio/minio
+        container_name: minio
+        restart: unless-stopped
+        ports:
+            - "9000:9000"
+            - "9001:9001"
+        environment:
+            MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+            MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+        command: server /data --console-address ":9001"
+        volumes:
+            - minio_data:/data
+        healthcheck:
+            test:
+                ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+            interval: 30s
+            timeout: 20s
+            retries: 3
+        networks:
+            - app_network
     api_gateway:
         build:
             context: ./api_gateway
-            dockerfile: DockerFile
+            dockerfile: Dockerfile
         container_name: api-gateway
         ports:
             - "8000:8000"
@@ -62,7 +83,7 @@ services:
     discovery_server:
         build:
             context: ./discovery_server
-            dockerfile: DockerFile
+            dockerfile: Dockerfile
         container_name: discovery-server
         ports:
             - "8761:8761"
@@ -71,8 +92,8 @@ services:
 
     blog_service:
         build:
-            context: ./blog_service
-            dockerfile: DockerFile
+            context: .
+            dockerfile: blog_service/Dockerfile
         container_name: blog-service
         # ports:
         #     - "8080:8080"
@@ -86,13 +107,15 @@ services:
             DB_PASSWORD: ${DB_PASSWORD}
             RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
             RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+            MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+            MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
         networks:
             - app_network
 
     comment_service:
         build:
             context: ./comment_service
-            dockerfile: DockerFile
+            dockerfile: Dockerfile
         container_name: comment-service
         # ports:
         #     - "8081:8081"
@@ -111,8 +134,8 @@ services:
 
     notification_service:
         build:
-            context: ./notification_service
-            dockerfile: DockerFile
+            context: .
+            dockerfile: notification_service/Dockerfile
         container_name: notification-service
         # ports:
         #     - "8082:8082"
@@ -134,7 +157,7 @@ services:
     user_service:
         build:
             context: ./user_service
-            dockerfile: DockerFile
+            dockerfile: Dockerfile
         container_name: user-service
         # ports:
         #     - "8083:8083"
@@ -154,7 +177,7 @@ services:
     frontend_service:
         build:
             context: ./frontend_service
-            dockerfile: DockerFile
+            dockerfile: Dockerfile
         container_name: frontend-service
         ports:
             - "5173:5173"
@@ -164,6 +187,7 @@ services:
 volumes:
     mysql_data:
     rabbitmq_data:
+    minio_data:
 
 networks:
     app_network:

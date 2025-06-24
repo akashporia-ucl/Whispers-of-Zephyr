@@ -28,6 +28,7 @@ public class JWTService {
 
         return JWT.create()
                 .withSubject(user.getUsername()) // Set the subject (username)
+                .withClaim("userId", user.getId().toString())
                 .withIssuedAt(new Date()) // Set the issued time
                 .withExpiresAt(new Date(System.currentTimeMillis() + 3600000)) // Set expiration time (1 hour)
                 .sign(algorithm);

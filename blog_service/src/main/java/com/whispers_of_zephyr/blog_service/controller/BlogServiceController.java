@@ -8,20 +8,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.whispers_of_zephyr.blog_service.dto.BlogRequest;
 import com.whispers_of_zephyr.blog_service.model.Blog;
 import com.whispers_of_zephyr.blog_service.service.BlogService;
+import com.whispers_of_zephyr.blog_service.service.MinioService;
+import com.whispers_of_zephyr.blog_service.service.messaging.producer.BlogMessageProducer;
 
+import jakarta.validation.Valid;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import okhttp3.internal.ws.RealWebSocket;
 
 @RestController
 @RequestMapping("/blog-service/api/v1")
@@ -30,7 +38,13 @@ import lombok.extern.log4j.Log4j2;
 public class BlogServiceController {
 
     @Autowired
+    private BlogMessageProducer messageProducer;
+
+    @Autowired
     private BlogService blogService;
+
+    @Autowired
+    private MinioService minioService;
 
     @GetMapping("/")
     public String helloFromService() {
@@ -55,18 +69,29 @@ public class BlogServiceController {
 
     // Post method to create a blog
     @PostMapping("/blogs")
-    public ResponseEntity<Blog> postBlog(@RequestParam String title, @RequestParam String content,
-            @RequestParam String author, @RequestParam(required = false) MultipartFile image) throws IOException {
-        log.info("Creating blog with title: " + title + ", author: " + author);
-        Blog blog = new Blog(title, content, author, UUID.randomUUID(), null);
+    public ResponseEntity<Boolean> postBlog(
+            @ModelAttribute @Valid BlogRequest blogRequest,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestHeader("X-User-Id") String userId) throws IOException {
+
+        log.info("Creating blog with title: {}, userId: {}", blogRequest.getTitle(), userId);
+
         try {
+            UUID userUUID = UUID.fromString(userId); // Convert userId to UUID
+
+            // Blog blog = new Blog(title, content, author, userUUID);
+
             log.info("Calling service to create a blog");
-            Blog createdBlog = blogService.postBlog(blog, image);
-            log.info("Blog created successfully");
-            return ResponseEntity.ok(createdBlog);
-        } catch (IOException e) {
-            log.error("Error while creating blog: " + e.getMessage());
-            return ResponseEntity.status(500).body(blog); // Internal Server Error
+            // Blog createdBlog = blogService.postBlog(blog);
+            UUID ImageUuid = minioService.uploadFile(image, userUUID); // Upload image to Minio
+            log.info("Image uploaded successfully with image uuid: {}", ImageUuid);
+            boolean messageSent = messageProducer.sendBlogCreateMessage(blogRequest, userUUID, ImageUuid);
+            log.info("Blog message created successfully with image uploaded: {}", messageSent);
+
+            return ResponseEntity.ok(messageSent);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid UUID format for userId: {}", userId);
+            return ResponseEntity.status(400).body(null); // Return Bad Request if UUID is invalid
         }
     }
 

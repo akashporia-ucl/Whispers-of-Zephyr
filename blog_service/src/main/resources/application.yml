@@ -44,3 +44,10 @@ application:
     config:
         comment-service:
             url: http://comment-service:8081/comment-service/api/v1
+
+minio:
+    endpoint: http://minio:9000
+    accessKey: ${MINIO_ROOT_USER}
+    secretKey: ${MINIO_ROOT_PASSWORD}
+    bucketName: blog-images
+    createBucket: true

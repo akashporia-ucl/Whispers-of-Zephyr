@@ -1,7 +1,6 @@
-package com.whispers_of_zephyr.blog_service.component;
+package com.whispers_of_zephyr.blog_service.dto;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -17,8 +16,9 @@ public class BlogEvent implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private UUID blogId;
     private String blogTitle;
     private String blogAuthor;
-    private LocalDateTime blogCreatedTime;
+    private String blogContent;
+    private UUID userId;
+    private UUID imageUUID;
 }

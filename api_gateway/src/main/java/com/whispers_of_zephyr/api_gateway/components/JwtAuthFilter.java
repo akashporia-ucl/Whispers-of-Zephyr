@@ -60,11 +60,20 @@ public class JwtAuthFilter implements GlobalFilter {
         // Validate JWT reactively
         return jwtUtil.validateToken(token)
                 .flatMap(isValid -> {
-                    if (isValid) {
-                        return chain.filter(exchange);
-                    } else {
+                    if (!isValid) {
                         return unauthorizedResponse(exchange);
                     }
+                    log.info("JWT is valid, extracting userId");
+                    return jwtUtil.extractUserId(token) // Extract userId
+                            .flatMap(userId -> {
+                                log.info("Extracted userId: {}", userId);
+                                ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+                                        .header("X-User-Id", userId) // Attach userId to headers
+                                        .build();
+
+                                ServerWebExchange modifiedExchange = exchange.mutate().request(modifiedRequest).build();
+                                return chain.filter(modifiedExchange);
+                            });
                 });
     }
 

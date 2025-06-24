@@ -8,7 +8,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -50,19 +52,26 @@ public class Blog {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Lob
-    @Column(name = "image", columnDefinition = "MEDIUMBLOB")
-    private byte[] image;
+    @ManyToOne
+    @JoinColumn(name = "image_id")
+    private Image image;
 
     @Column(name = "user_id")
     @NotNull(message = "User ID is mandatory")
     private UUID userId;
 
-    public Blog(String title, String content, String author, UUID user_id, byte[] image) {
+    public Blog(String title, String content, String author, UUID userId) {
         this.title = title;
         this.content = content;
         this.author = author;
-        this.userId = user_id;
+        this.userId = userId;
+    }
+
+    public Blog(String title, String content, String author, UUID userId, Image image) {
+        this.title = title;
+        this.content = content;
+        this.author = author;
+        this.userId = userId;
         this.image = image;
     }
 
@@ -75,14 +84,5 @@ public class Blog {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
-    }
-
-    // Lombok's @Getter and @Setter annotations are not working for the image field
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
-
-    public byte[] getImage() {
-        return image;
     }
 }

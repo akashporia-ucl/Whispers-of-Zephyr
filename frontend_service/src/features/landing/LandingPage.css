@@ -1,0 +1,28 @@
+.landing-root {
+    width: 100%;
+    background: black;
+    color: white;
+    overflow-x: hidden;
+}
+
+.landing-section {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 2rem;
+    text-align: center;
+}
+
+.landing-section h1 {
+    font-size: 3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.landing-section h2 {
+    font-size: 1.5rem;
+    font-weight: 300;
+    max-width: 600px;
+}
