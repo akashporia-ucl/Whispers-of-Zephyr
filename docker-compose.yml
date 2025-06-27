@@ -18,6 +18,22 @@ services:
         networks:
             - app_network
 
+    nginx:
+        build:
+            context: ./nginx/
+            dockerfile: Dockerfile
+        restart: always
+        ports:
+            - "80:80"
+        depends_on:
+            - api_gateway
+            - frontend_service
+            - minio
+            - rabbitmq
+            - discovery_server
+        networks:
+            - app_network
+
     rabbitmq:
         image: rabbitmq:3-management
         container_name: rabbitmq
@@ -49,10 +65,15 @@ services:
         restart: unless-stopped
         ports:
             - "9000:9000"
-            - "9001:9001"
+
         environment:
             MINIO_ROOT_USER: ${MINIO_ROOT_USER}
             MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+            # MINIO_SERVER_URL: http://localhost:9000
+            MINIO_BROWSER_REDIRECT_URL: http://localhost/minio
+            MINIO_BROWSER: "on"
+            MINIO_DOMAIN: "localhost"
+            MINIO_EXTERNAL_ENDPOINT: "http://localhost/minio-api" # External endpoint for API
         command: server /data --console-address ":9001"
         volumes:
             - minio_data:/data

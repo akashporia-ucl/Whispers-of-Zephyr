@@ -1,28 +1,29 @@
 package com.whispers_of_zephyr.blog_service.service;
 
 import java.io.IOException;
-import java.io.InputStream;
+
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Optional;
+import org.springframework.stereotype.Service;
+
 import com.whispers_of_zephyr.blog_service.client.CommentClient;
 import com.whispers_of_zephyr.blog_service.component.BlogRequestToBlogEventDTO;
 import com.whispers_of_zephyr.blog_service.component.MyAppConfigComponent;
 import com.whispers_of_zephyr.blog_service.dto.BlogEvent;
+import com.whispers_of_zephyr.blog_service.dto.BlogResponse;
 import com.whispers_of_zephyr.blog_service.model.Blog;
+import com.whispers_of_zephyr.blog_service.model.BlogImage;
 import com.whispers_of_zephyr.blog_service.model.Image;
+import com.whispers_of_zephyr.blog_service.repository.BlogImageRepository;
 import com.whispers_of_zephyr.blog_service.repository.BlogRepository;
 import com.whispers_of_zephyr.blog_service.repository.ImageRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Log4j2
@@ -33,6 +34,12 @@ public class BlogService {
 
     @Autowired
     private final ImageRepository imageRepository;
+
+    @Autowired
+    private final BlogImageRepository blogImageRepository;
+
+    @Autowired
+    private final MinioService minioService;
 
     @Autowired
     private final RabbitTemplate rabbitTemplate;
@@ -48,13 +55,15 @@ public class BlogService {
 
     public BlogService(BlogRepository blogRepository, MyAppConfigComponent appConfigComponent,
             CommentClient commentClient, RabbitTemplate rabbitTemplate, BlogRequestToBlogEventDTO blogToBlogEventDTO,
-            ImageRepository imageRepository) {
+            ImageRepository imageRepository, BlogImageRepository blogImageRepository, MinioService minioService) {
         this.blogRepository = blogRepository;
         this.appConfigComponent = appConfigComponent;
         this.commentClient = commentClient;
         this.rabbitTemplate = rabbitTemplate;
         this.blogToBlogEventDTO = blogToBlogEventDTO;
         this.imageRepository = imageRepository;
+        this.blogImageRepository = blogImageRepository;
+        this.minioService = minioService;
     }
 
     // @Autowired
@@ -71,39 +80,18 @@ public class BlogService {
         return blogRepository.findAll();
     }
 
+    @Transactional
     public Blog postBlog(Blog blog, UUID imageId) throws IOException {
         try {
-            // byte[] imageBytes;
-            // if (image != null && !image.isEmpty()) {
-            // log.info("Image is not empty");
-            // imageBytes = image.getBytes();
-            // } else {
-            // log.info("Image is empty, using default image");
-            // // Get the default image from the resources folder
-            // InputStream imageStream = new
-            // ClassPathResource(appConfigComponent.getDefaultImagePath())
-            // .getInputStream();
-            // log.info("Default imaged fetched from the resources folder");
-            // imageBytes = imageStream.readAllBytes();
-            // }
-
-            // // Set the image bytes to the blog object
-            // blog.setImage(imageBytes);
-
-            // Log the blog details for debugging
             log.info("Blog details: {}", blog);
-
-            if (imageId != null) {
-                log.info("Image ID provided: {}", imageId);
-                Image image = imageRepository.findById(imageId)
-                        .orElseThrow(() -> new IllegalArgumentException("Image not found with id: " + imageId));
-                blog.setImage(image);
-            } else {
-                log.warn("No Image ID provided, blog will be created without an image");
-            }
 
             // Save the blog to the repository
             Blog created = blogRepository.save(blog);
+            log.info("Blog created successfully with ID: {}", created.getId());
+            BlogImage blogImage = new BlogImage(blog.getId(), imageId);
+            log.info("Creating BlogImage association with Blog ID: {} and Image ID: {}", blog.getId(), imageId);
+
+            blogImageRepository.save(blogImage);
 
             // Publish the blog event to the RabbitMQ
             publishBlogEvent(created);
@@ -117,6 +105,35 @@ public class BlogService {
             return null;
         }
 
+    }
+
+    public BlogResponse getBlogById(UUID id) {
+        try {
+            log.info("Fetching blog with ID: {}", id);
+            Blog blog = blogRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Blog not found with id: " + id));
+
+            log.info("Blog found: {}", blog);
+
+            // Create BlogResponse object
+            BlogImage blogImage = blogImageRepository.findByBlogId(id)
+                    .orElseThrow(() -> new IllegalArgumentException("BlogImage not found for blog id: " + id));
+            log.info("BlogImage found with blogId {} and imageId {}", blogImage.getBlogId(), blogImage.getImageId());
+            Image image = imageRepository.findById(blogImage.getImageId())
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("Image not found with id: " +
+                                    blogImage.getImageId()));
+            log.info("Image found with filename: {}", image.getFileName());
+            String imageURL = minioService.getFileURL(image.getFileName());
+            log.info("Image URL retrieved: {}", imageURL);
+            BlogResponse response = new BlogResponse(blog.getTitle(), blog.getContent(),
+                    blog.getAuthor(), imageURL);
+            log.info("BlogResponse created: {}", response);
+            return response;
+        } catch (IllegalArgumentException e) {
+            log.error("Error fetching blog by ID: {}", e.getMessage());
+            return null;
+        }
     }
 
     private void publishBlogEvent(Blog blog) {

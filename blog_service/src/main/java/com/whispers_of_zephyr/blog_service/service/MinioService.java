@@ -8,14 +8,24 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import io.minio.http.Method;
+
+import com.whispers_of_zephyr.blog_service.model.BlogImage;
 import com.whispers_of_zephyr.blog_service.model.Image;
 import com.whispers_of_zephyr.blog_service.repository.ImageRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.whispers_of_zephyr.blog_service.dto.BlogResponse;
+import com.whispers_of_zephyr.blog_service.dto.ImageResponse;
+import com.whispers_of_zephyr.blog_service.repository.BlogImageRepository;
+
+import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
@@ -36,17 +46,28 @@ public class MinioService {
     private ImageRepository imageRepository;
 
     @Autowired
+    private BlogImageRepository blogImageRepository;
+
+    @Autowired
     private TransactionTemplate transactionTemplate;
 
     @Value("${minio.bucketName}")
     private String bucketName;
 
-    public MinioService(MinioClient minioClient) {
-        this.minioClient = minioClient;
-    }
+    // public MinioService(MinioClient minioClient) {
+    // this.minioClient = minioClient;
+    // }
+
+    @Autowired
+    @Qualifier("presignedUrlClient")
+    private MinioClient presignedUrlClient;
 
     public UUID uploadFile(MultipartFile file, UUID userId) {
         try {
+            if (file == null || file.isEmpty()) {
+                return null; // or throw an exception if you prefer
+
+            }
             String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
 
             minioClient.putObject(
@@ -68,20 +89,82 @@ public class MinioService {
 
     public String getFileURL(String fileName) {
         try {
-            return minioClient.getPresignedObjectUrl(
-                    io.minio.GetPresignedObjectUrlArgs.builder()
+            // Generate presigned URL using the client configured with public-facing URL
+            String presignedUrl = presignedUrlClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(Method.GET)
                             .bucket(bucketName)
                             .object(fileName)
-                            .expiry(7, TimeUnit.DAYS) // URL valid for 24 hours
+                            .expiry(1, TimeUnit.HOURS)
                             .build());
-        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidResponseException
-                | ServerException | XmlParserException | IOException | IllegalArgumentException | InvalidKeyException
-                | NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error retrieving file URL from Minio", e);
+
+            log.info("Generated raw presigned URL: {}", presignedUrl);
+
+            // Replace the Docker internal hostname with localhost that browsers can access
+            presignedUrl = presignedUrl.replace("http://minio:9000", "http://localhost/minio-api");
+            log.info("Rewrote URL for external access: {}", presignedUrl);
+
+            return presignedUrl;
+        } catch (Exception e) {
+            log.error("Error generating presigned URL: {}", e.getMessage(), e);
+            throw new RuntimeException("Error generating presigned URL", e);
         }
     }
 
-    public InputStream getFile(String fileName) {
+    public ImageResponse getFileURLByBlogId(UUID blogId) {
+        try {
+            BlogImage blogImage = blogImageRepository.findByBlogId(blogId)
+                    .orElseThrow(() -> new IllegalArgumentException("BlogImage not found for blog id: " + blogId));
+            log.info("BlogImage found with blogId {} and imageId {}", blogImage.getBlogId(), blogImage.getImageId());
+            Image image = imageRepository.findById(blogImage.getImageId())
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("Image not found with id: " + blogImage.getImageId()));
+            log.info("Image found with filename: {}", image.getFileName());
+            String url = getFileURL(image.getFileName());
+            log.info("File URL generated: {}", url);
+            ImageResponse response = new ImageResponse(
+                    url,
+                    image.getMimeType(),
+                    image.getFileName(),
+                    image.getFileSize());
+            return response;
+        } catch (IllegalArgumentException e) {
+            log.error("Error fetching image by ID: {}", e.getMessage());
+            return null; // or throw an exception if you prefer
+        } catch (RuntimeException e) {
+            log.error("Error generating file URL from Minio: {}", e.getMessage());
+            return null; // or throw an exception if you prefer
+        }
+    }
+
+    public InputStream getFileAsStream(UUID BlogId) {
+        try {
+            BlogImage blogImage = blogImageRepository.findByBlogId(BlogId)
+                    .orElseThrow(() -> new IllegalArgumentException("BlogImage not found for blog id: " + BlogId));
+            log.info("BlogImage found with blogId {} and imageId {}", blogImage.getBlogId(), blogImage.getImageId());
+            Image image = imageRepository.findById(blogImage.getImageId())
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("Image not found with id: " + blogImage.getImageId()));
+            log.info("Image found with filename: {}", image.getFileName());
+
+            InputStream fileStream = getFile(image.getFileName());
+            log.info("File stream recived {}", fileStream);
+
+            log.info("ImageResponse created with fileName: {}, mimeType: {}, fileSize: {}", image.getFileName(),
+                    image.getMimeType(), image.getFileSize());
+
+            return fileStream;
+
+        } catch (IllegalArgumentException e) {
+            log.error("Error fetching image by Blog ID: {}", e.getMessage());
+            return null; // or throw an exception if you prefer
+        } catch (RuntimeException e) {
+            log.error("Error retrieving file from Minio: {}", e.getMessage());
+            return null; // or throw an exception if you prefer
+        }
+    }
+
+    private InputStream getFile(String fileName) {
         try {
             return minioClient.getObject(
                     io.minio.GetObjectArgs.builder()

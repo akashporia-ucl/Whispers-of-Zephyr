@@ -1,6 +1,7 @@
 package com.whispers_of_zephyr.blog_service.controller;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.whispers_of_zephyr.blog_service.dto.BlogRequest;
+import com.whispers_of_zephyr.blog_service.dto.BlogResponse;
+import com.whispers_of_zephyr.blog_service.dto.ImageResponse;
 import com.whispers_of_zephyr.blog_service.model.Blog;
 import com.whispers_of_zephyr.blog_service.service.BlogService;
 import com.whispers_of_zephyr.blog_service.service.MinioService;
@@ -63,8 +66,29 @@ public class BlogServiceController {
 
     // Get method to get a blog by id along with the comments
     @GetMapping("/blogs/{id}")
-    public ResponseEntity<String> getMethodName(@PathVariable String id) {
-        return ResponseEntity.ok().body("Blog with id: " + id);
+    public ResponseEntity<BlogResponse> getBlogById(@PathVariable String id) {
+        try {
+            log.info("Getting blog with id: {}", id);
+            UUID blogId = UUID.fromString(id); // Convert id to UUID
+            BlogResponse blog = blogService.getBlogById(blogId);
+            return ResponseEntity.ok().body(blog);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid UUID format for id: {}", id);
+            return ResponseEntity.status(400).body(null); // Bad Request
+        }
+    }
+
+    @GetMapping("/blogs/{id}/image")
+    public ResponseEntity<ImageResponse> getImageForBlogById(@PathVariable String id) {
+        try {
+            log.info("Getting image for blog with id: {}", id);
+            UUID blogId = UUID.fromString(id); // Convert id to UUID
+            ImageResponse response = minioService.getFileURLByBlogId(blogId);
+            return ResponseEntity.ok().body(response);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid UUID format for id: {}", id);
+            return ResponseEntity.status(400).body(null); // Bad Request
+        }
     }
 
     // Post method to create a blog
@@ -78,8 +102,6 @@ public class BlogServiceController {
 
         try {
             UUID userUUID = UUID.fromString(userId); // Convert userId to UUID
-
-            // Blog blog = new Blog(title, content, author, userUUID);
 
             log.info("Calling service to create a blog");
             // Blog createdBlog = blogService.postBlog(blog);

@@ -64,7 +64,7 @@ public class UserController {
         return ResponseEntity.status(200).body(createdUser);
     }
 
-    @GetMapping("/user/login")
+    @PostMapping("/user/login")
     public String getJwtToken(@RequestBody @NotNull LoginRequest loginRequest)
             throws Exception {
         log.info("Logging in user: {}", loginRequest);

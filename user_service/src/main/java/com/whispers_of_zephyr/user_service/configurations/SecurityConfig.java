@@ -50,10 +50,10 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.POST, "/user-service/api/v1/user",
                                                                 "/user-service/api/v1/user/auth/reset-password/request",
                                                                 "/user-service/api/v1/user/auth/reset-password/validate-otp",
-                                                                "/user-service/api/v1/user/auth/reset-password/confirm-password")
-                                                .permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/user-service/api/v1/public-key",
+                                                                "/user-service/api/v1/user/auth/reset-password/confirm-password",
                                                                 "/user-service/api/v1/user/login")
+                                                .permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/user-service/api/v1/public-key")
                                                 .permitAll()
                                                 .anyRequest().authenticated()) // All other endpoints require
                                                                                // authentication

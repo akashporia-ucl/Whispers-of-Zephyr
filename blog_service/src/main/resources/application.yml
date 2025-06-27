@@ -51,3 +51,6 @@ minio:
     secretKey: ${MINIO_ROOT_PASSWORD}
     bucketName: blog-images
     createBucket: true
+    external:
+        public-url: http://minio:9000
+        path: /minio-api
